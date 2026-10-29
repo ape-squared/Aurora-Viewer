@@ -893,3 +893,27 @@ both are done:
   of reply and a mere hypothesis are not enough to close it. If new evidence
   invalidates the resolution, reopen it (`gh issue reopen`), explain why and
   resume the triage.
+
+## 16. Cloud agents (Linux)
+
+Cursor Cloud Agents run this repository on Linux, with no graphics card and
+no sound card. The saved environment installs the build libraries from
+[docs/LINUX.md](docs/LINUX.md), plus `mesa-vulkan-drivers` (lavapipe, so the
+viewer can draw) and `zenity` (the Linux file and message dialogs).
+
+- **Compiler.** `cc` and `c++` must be GCC. The base image selects Clang,
+  which cannot see the libstdc++ headers, and the C++ build of `meshopt`
+  then fails. Clang stays installed as `clang` / `clang++`.
+- **Sound.** `/etc/asound.conf` points the default device at ALSA's null
+  plugin, so opening the audio device succeeds.
+- **Demo.** `AURORA_DEMO=1 cargo run -p aurora-viewer -- --title "Test <task>"`.
+  Lavapipe is chosen on its own. The first image can take more than six
+  seconds; the viewer then shows "the graphics card is not responding".
+  Choose **Yes** (keep waiting). The world does appear. `AURORA_GRAPHICS_PRESET=potato`
+  keeps later frames lighter. Captures use `AURORA_CAPTURE` as in
+  [docs/TESTING.md](docs/TESTING.md).
+- **Checks on Linux**, the same as the `clippy (Linux)` job:
+  `cargo fmt --all -- --check`,
+  `cargo clippy --profile ci --workspace --all-targets --locked -- -D warnings -A dead-code`,
+  and `cargo test --profile ci --locked -p aurora-media -p aurora-updater`.
+  `./scripts/check.ps1` remains the full check on Windows.
