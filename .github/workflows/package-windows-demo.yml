@@ -3,6 +3,11 @@ name: Package Windows demo
 
 on:
   workflow_dispatch:
+    inputs:
+      ref:
+        description: Git ref to build (branch, tag, or SHA)
+        required: true
+        default: feat/filming-mode-1469
 
 permissions:
   contents: read
@@ -16,6 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          ref: ${{ inputs.ref }}
           fetch-depth: 0
           filter: blob:none
       - name: Rust stable
