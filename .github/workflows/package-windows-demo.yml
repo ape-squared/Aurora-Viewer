@@ -1,0 +1,39 @@
+# One-off Windows package for local / ShadowPC demos. Not part of CI.
+name: Package Windows demo
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          filter: blob:none
+      - name: Rust stable
+        run: |
+          ./.github/drop-extra-targets.ps1
+          rustup update stable --no-self-update
+      - uses: Swatinem/rust-cache@v2
+        with:
+          save-if: false
+      - name: Release build
+        run: cargo build --release --locked -p aurora-viewer
+      - name: Package
+        shell: pwsh
+        run: |
+          ./scripts/package.ps1 -Exe target/release/aurora-viewer.exe -Out Aurora-Viewer-filming-1488
+          Compress-Archive -Path Aurora-Viewer-filming-1488 -DestinationPath Aurora-Viewer-filming-1488-windows-x64.zip
+      - uses: actions/upload-artifact@v7
+        with:
+          name: Aurora-Viewer-filming-1488-windows-x64
+          path: Aurora-Viewer-filming-1488-windows-x64.zip
+          retention-days: 7
